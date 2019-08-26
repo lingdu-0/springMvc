@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd">
+    <!--读取db.properties数据-->
+<!--    <context:property-placeholder location="classpath:db.properties"/>-->
+    <context:property-placeholder location="classpath:db.properties" />
+    <!-- 配置数据源  org.springframework.jdbc.datasource.DriverManagerDataSource -->
+<!--    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">-->
+<!--        <property name="driverClassName" value="${driverClassName}"></property>-->
+<!--        <property name="url" value="${url}"></property>-->
+<!--        <property name="username" value="${username}"></property>-->
+<!--        <property name="password" value="${password}"></property>-->
+<!--    </bean>-->
+    <!-- 配置数据源-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <!-- Mysql数据库驱动-->
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+        <!-- 连接数据库的url-->
+        <property name="url" value="jdbc:mysql://localhost:3306/kf13?characterEncoding=utf8"></property>
+        <!-- 连接数据库的用户名-->
+        <property name="username" value="root"></property>
+        <!-- 连接数据库的密码-->
+        <property name="password" value="123456"></property>
+    </bean>
+
+
+    <!--基于数据源的事务管理器，通过属性引用数据源-->
+    <bean id="txManner" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--事务管理器-->
+    <tx:advice id="txAdvice" transaction-manager="txManner">
+        <!--事务详情：传播行为，隔离级别-->
+        <tx:attributes>
+            <tx:method name="*"/>
+        </tx:attributes>
+    </tx:advice>
+    <!--事务通知与切入点关联-->
+    <aop:config>
+        <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.wb.service.*.*(..))"></aop:advisor>
+    </aop:config>
+
+    <bean id="userDao" class="com.wb.dao.UserDao">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <bean id="userService" class="com.wb.service.UserService">
+        <property name="userDao" ref="userDao"></property>
+<!--        <property name="jdbcurl" value="${url}"></property>-->
+    </bean>
+</beans>
